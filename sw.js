@@ -1,5 +1,5 @@
 const CACHE = 'criadouro-v3';
-const URLS = ['ovinos .html', 'manifest.json'];
+const URLS = ['ovinos.html', 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(

@@ -2,7 +2,7 @@
   "name": "Criatório IGS",
   "short_name": "Ovelhas",
   "description": "Sistema de gestão para criatório de ovinos",
-  "start_url": "ovinos .html",
+  "start_url": "ovinos.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#FFA500",
