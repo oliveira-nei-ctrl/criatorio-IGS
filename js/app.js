@@ -140,6 +140,17 @@ window.addEventListener('beforeinstallprompt', e => {
 function dismissInstall(){
   document.getElementById('install-banner').style.display='none';
 }
+function atualizarApp(){
+  document.getElementById('sw-aviso').style.display='none';
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      if(reg.waiting){
+        reg.waiting.postMessage({action:'skipWaiting'});
+        window.location.reload();
+      }
+    });
+  }
+}
 
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
@@ -157,6 +168,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const novo=reg.installing;
+        novo.addEventListener('statechange', ()=>{
+          if(novo.state==='installed'&&navigator.serviceWorker.controller){
+            const aviso=document.getElementById('sw-aviso');
+            if(aviso) aviso.style.display='flex';
+          }
+        });
+      });
+    }).catch(()=>{});
   }
+
+  setInterval(()=>{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  }, 1800000);
 });

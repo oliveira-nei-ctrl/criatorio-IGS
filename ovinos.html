@@ -33,6 +33,10 @@
         <div class="ib-text">Instale o app na tela inicial para acesso rápido!</div>
         <button class="ib-close" onclick="dismissInstall()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
+      <div id="sw-aviso" class="install-banner" style="display:none;background:var(--amber-bg);border-color:rgba(217,119,6,0.3);" onclick="atualizarApp()">
+        <div class="ib-text">Nova versão disponível! Toque para atualizar.</div>
+        <button class="ib-close" onclick="event.stopPropagation();document.getElementById('sw-aviso').style.display='none'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
       <div class="metrics" id="dash-metrics"></div>
       <div class="card">
         <div class="card-title">Nascimentos <span id="dash-ano" style="font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
