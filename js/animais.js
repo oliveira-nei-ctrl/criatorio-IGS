@@ -3,6 +3,14 @@ function fAnimal(idx){
   editIdx=idx; editType='animais';
   return `
 <div class="modal-hd"><div class="modal-title">${a?'Editar':'Novo'} animal</div><button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div style="text-align:center;margin-bottom:14px;">
+  <div class="foto-preview" id="foto-preview" onclick="document.getElementById('fa-foto-input').click()">
+    ${a&&a.foto?`<img src="${a.foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:'<span style="font-size:32px;opacity:0.3;">+</span>'}
+  </div>
+  <div style="font-size:11px;color:var(--text2);margin-top:4px;">Toque para ${a&&a.foto?'trocar':'adicionar'} foto</div>
+  <input type="file" id="fa-foto-input" accept="image/*" capture="environment" style="display:none" onchange="processFoto(event)">
+  ${a&&a.foto?`<button class="btn btn-outline btn-sm" style="margin-top:4px;" onclick="event.stopPropagation();removerFoto()">Remover foto</button>`:''}
+</div>
 <div class="row2">
   <div class="form-g"><label>Brinco *</label><input id="fa-id" value="${a?a.id:''}" placeholder="OV-001" autocomplete="off"></div>
   <div class="form-g"><label>Nome</label><input id="fa-nome" value="${a?a.nome||'':''}" placeholder="opcional"></div>
@@ -22,6 +30,31 @@ function fAnimal(idx){
 <div class="form-g"><label>Origem</label><select id="fa-ori"><option ${a&&a.origem==='Nascido aqui'?'selected':''}>Nascido aqui</option><option ${a&&a.origem==='Comprado'?'selected':''}>Comprado</option></select></div>
 <button class="btn btn-blue" onclick="saveAnimal()">${a?'Atualizar':'Salvar'} animal</button>`; }
 
+let fotoData=null;
+function processFoto(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const max=300;
+      let w=img.width, h=img.height;
+      if(w>max||h>max){ if(w>h){ h=h*max/w; w=max; }else{ w=w*max/h; h=max; } }
+      const c=document.createElement('canvas');
+      c.width=w; c.height=h;
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      fotoData=c.toDataURL('image/jpeg',0.7);
+      const preview=document.getElementById('foto-preview');
+      if(preview) preview.innerHTML=`<img src="${fotoData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removerFoto(){ fotoData=null; const p=document.getElementById('foto-preview'); if(p) p.innerHTML='<span style="font-size:32px;opacity:0.3;">+</span>'; }
+
 function saveAnimal(){
   const id=document.getElementById('fa-id').value.trim();
   if(!id){ alert('Informe o brinco.'); return; }
@@ -30,9 +63,11 @@ function saveAnimal(){
     if(dup>=0){ alert('Já existe um animal com este brinco: '+id); return; }
   }
   const obj={ id, nome:document.getElementById('fa-nome').value, sexo:document.getElementById('fa-sexo').value, raca:document.getElementById('fa-raca').value, nasc:document.getElementById('fa-nasc').value, peso:document.getElementById('fa-peso').value, pai:document.getElementById('fa-pai').value, mae:document.getElementById('fa-mae').value, origem:document.getElementById('fa-ori').value, status:'ativo', dt:td() };
+  if(fotoData) obj.foto=fotoData;
   if(editIdx!==null){
     const old=D.animais[editIdx];
     obj.status=old.status;
+    if(!obj.foto&&old.foto) obj.foto=old.foto;
     if(old.peso!==obj.peso&&obj.peso){
       if(!old.pesoHist) old.pesoHist=[];
       old.pesoHist.push({data:td(),peso:old.peso});
@@ -41,6 +76,7 @@ function saveAnimal(){
   } else {
     D.animais.push(obj);
   }
+  fotoData=null;
   save(); closeModal(); renderSection(curSec); renderDashboard();
 }
 
@@ -58,21 +94,26 @@ function renderPlantel(){
     const loteAnimal=getLotOfAnimal(a.id);
     return `
     <div class="animal-card">
-      <div class="ac-hd">
-        <div><span class="ac-id">${a.id}</span>${a.nome?` — <span style="font-weight:400">${a.nome}</span>`:''}</div>
-        <div style="display:flex;gap:4px;align-items:center;">
-          ${loteAnimal?`<span class="badge bb" style="font-size:9px;padding:2px 8px;">${loteAnimal.nome}</span>`:''}
-          <span class="badge ${a.status==='morto'?'br':'bg'}">${a.status==='morto'?'Morto':'Ativo'}</span>
+      <div style="display:flex;gap:12px;">
+        ${a.foto?`<div class="animal-foto" onclick="verFoto('${a.id}')"><img src="${a.foto}"></div>`:''}
+        <div style="flex:1;min-width:0;">
+          <div class="ac-hd" style="margin-bottom:8px;">
+            <div><span class="ac-id">${a.id}</span>${a.nome?` — <span style="font-weight:400">${a.nome}</span>`:''}</div>
+            <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
+              ${loteAnimal?`<span class="badge bb" style="font-size:9px;padding:2px 8px;">${loteAnimal.nome}</span>`:''}
+              <span class="badge ${a.status==='morto'?'br':'bg'}">${a.status==='morto'?'Morto':'Ativo'}</span>
+            </div>
+          </div>
+          <div class="ac-grid">
+            <span class="ac-lbl">Sexo</span><span class="ac-val">${a.sexo}</span>
+            <span class="ac-lbl">Raça</span><span class="ac-val">${a.raca||'-'}</span>
+            <span class="ac-lbl">Nasc.</span><span class="ac-val">${fmtD(a.nasc)}</span>
+            <span class="ac-val">${a.peso?a.peso+' kg':'-'}</span>
+            <span class="ac-lbl">Pai</span><span class="ac-val">${a.pai||'-'}</span>
+            <span class="ac-lbl">Mãe</span><span class="ac-val">${a.mae||'-'}</span>
+            ${filhos.length?`<span class="ac-lbl">Filhos</span><span class="ac-val">${filhos.length}</span>`:''}
+          </div>
         </div>
-      </div>
-      <div class="ac-grid">
-        <span class="ac-lbl">Sexo</span><span class="ac-val">${a.sexo}</span>
-        <span class="ac-lbl">Raça</span><span class="ac-val">${a.raca||'-'}</span>
-        <span class="ac-lbl">Nasc.</span><span class="ac-val">${fmtD(a.nasc)}</span>
-        <span class="ac-val">${a.peso?a.peso+' kg':'-'}</span>
-        <span class="ac-lbl">Pai</span><span class="ac-val">${a.pai||'-'}</span>
-        <span class="ac-lbl">Mãe</span><span class="ac-val">${a.mae||'-'}</span>
-        ${filhos.length?`<span class="ac-lbl">Filhos</span><span class="ac-val">${filhos.length}</span>`:''}
       </div>
       ${a.pesoHist&&a.pesoHist.length?`<div style="margin-top:8px;"><div class="weight-chart">${a.pesoHist.map((w,wi)=>`<div class="wc"><div class="wv">${w.peso}</div><div class="wb" style="height:${Math.round((parseFloat(w.peso)/Math.max(...a.pesoHist.map(x=>parseFloat(x.peso)),1))*85)+3}px"></div><div class="wl">${fmtD(w.data)}</div></div>`).join('')}${a.peso?`<div class="wc"><div class="wv">${a.peso}</div><div class="wb" style="height:${Math.round((parseFloat(a.peso)/Math.max(...a.pesoHist.map(x=>parseFloat(x.peso)),parseFloat(a.peso),1))*85)+3}px;background:var(--primary);"></div><div class="wl">atual</div></div>`:''}</div></div>`:''}
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
@@ -81,6 +122,12 @@ function renderPlantel(){
         <button class="btn btn-red btn-sm" onclick="del('animais',${realIdx},'Remover ${a.id} do plantel?')">Remover</button>
       </div>
     </div>`}).join('');
+}
+
+function verFoto(animalId){
+  const a=D.animais.find(x=>x.id===animalId);
+  if(!a||!a.foto) return;
+  showModal(`<div class="modal-hd"><div class="modal-title">${a.id}${a.nome?' — '+a.nome:''}</div><button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><img src="${a.foto}" style="width:100%;border-radius:var(--radius);">`);
 }
 
 function registrarPeso(idx){

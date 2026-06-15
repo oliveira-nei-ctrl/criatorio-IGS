@@ -159,3 +159,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .lm-val{font-size:14px;font-weight:700;}
 
 .lote-animal-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin:4px 0;background:var(--bg2);border-radius:var(--radius);font-size:13px;border:1px solid var(--border);}
+
+.foto-preview{width:80px;height:80px;border-radius:50%;background:var(--bg2);border:2px dashed var(--border2);display:flex;align-items:center;justify-content:center;margin:0 auto;cursor:pointer;overflow:hidden;transition:border-color .2s;}
+.foto-preview:hover{border-color:var(--primary);}
+.animal-foto{width:60px;height:60px;border-radius:50%;overflow:hidden;flex-shrink:0;cursor:pointer;border:2px solid var(--border);transition:border-color .2s;}
+.animal-foto:hover{border-color:var(--primary);}
+.animal-foto img{width:100%;height:100%;object-fit:cover;}
