@@ -142,13 +142,11 @@ function dismissInstall(){
 }
 function atualizarApp(){
   document.getElementById('sw-aviso').style.display='none';
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
-      if(reg.waiting){
-        reg.waiting.postMessage({action:'skipWaiting'});
-        window.location.reload();
-      }
-    });
+  if('serviceWorker' in navigator&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({action:'skipWaiting'});
+    window.location.reload();
+  } else {
+    window.location.reload();
   }
 }
 
@@ -168,22 +166,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
-      reg.addEventListener('updatefound', ()=>{
-        const novo=reg.installing;
-        novo.addEventListener('statechange', ()=>{
-          if(novo.state==='installed'&&navigator.serviceWorker.controller){
-            const aviso=document.getElementById('sw-aviso');
-            if(aviso) aviso.style.display='flex';
-          }
+    navigator.serviceWorker.getRegistrations().then(regs=>{
+      regs.forEach(r=>r.unregister());
+    }).then(()=>{
+      navigator.serviceWorker.register('./sw.js').then(reg=>{
+        reg.addEventListener('updatefound', ()=>{
+          const novo=reg.installing;
+          if(!novo) return;
+          novo.addEventListener('statechange', ()=>{
+            if(novo.state==='installed'&&navigator.serviceWorker.controller){
+              const aviso=document.getElementById('sw-aviso');
+              if(aviso) aviso.style.display='flex';
+            }
+          });
         });
-      });
-    }).catch(()=>{});
+        if(reg.active){
+          const aviso=document.getElementById('sw-aviso');
+          if(aviso&&reg.active!==navigator.serviceWorker.controller) aviso.style.display='flex';
+        }
+      }).catch(()=>{});
+    });
   }
 
   setInterval(()=>{
     if('serviceWorker' in navigator){
       navigator.serviceWorker.register('./sw.js').catch(()=>{});
     }
-  }, 1800000);
+  }, 600000);
 });
