@@ -83,7 +83,8 @@ function openAdd(){
     plantel: ()=>fAnimal(null),
     repro: ()=>({cobertura:()=>fCobertura(null),prenhez:()=>fPrenhez(null),parto:()=>fParto(null)}[curReproTab])(),
     saude: ()=>({vacina:()=>fVacina(null),verminose:()=>fVerminose(null),mortes:()=>fMorte(null)}[curSaudeTab])(),
-    fin: ()=>fFinanceiro(null)
+    fin: ()=>fFinanceiro(null),
+    lotes: ()=>fLote(null)
   };
   const fn=map[curSec];
   if(fn) showModal(typeof fn==='function'?fn():fn);
@@ -105,8 +106,9 @@ function renderSection(id){
   else if(id==='repro'){ renderRepro('cobertura'); renderRepro('prenhez'); renderRepro('parto'); }
   else if(id==='saude'){ renderSaude('vacina'); renderSaude('verminose'); renderSaude('mortes'); }
   else if(id==='fin') renderFin();
+  else if(id==='lotes') renderLotes();
 }
-function renderAll(){ renderDashboard(); renderPlantel(); ['cobertura','prenhez','parto'].forEach(t=>renderRepro(t)); ['vacina','verminose','mortes'].forEach(t=>renderSaude(t)); renderFin(); }
+function renderAll(){ renderDashboard(); renderPlantel(); ['cobertura','prenhez','parto'].forEach(t=>renderRepro(t)); ['vacina','verminose','mortes'].forEach(t=>renderSaude(t)); renderFin(); renderLotes(); }
 
 function toggleDark(){
   const h=document.documentElement;

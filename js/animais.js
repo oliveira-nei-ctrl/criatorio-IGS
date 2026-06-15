@@ -55,11 +55,15 @@ function renderPlantel(){
   el.innerHTML=lista.map((a,i)=>{
     const realIdx=D.animais.indexOf(a);
     const filhos=D.animais.filter(f=>f.pai===a.id||f.mae===a.id);
+    const loteAnimal=getLotOfAnimal(a.id);
     return `
     <div class="animal-card">
       <div class="ac-hd">
         <div><span class="ac-id">${a.id}</span>${a.nome?` — <span style="font-weight:400">${a.nome}</span>`:''}</div>
-        <span class="badge ${a.status==='morto'?'br':'bg'}">${a.status==='morto'?'Morto':'Ativo'}</span>
+        <div style="display:flex;gap:4px;align-items:center;">
+          ${loteAnimal?`<span class="badge bb" style="font-size:9px;padding:2px 8px;">${loteAnimal.nome}</span>`:''}
+          <span class="badge ${a.status==='morto'?'br':'bg'}">${a.status==='morto'?'Morto':'Ativo'}</span>
+        </div>
       </div>
       <div class="ac-grid">
         <span class="ac-lbl">Sexo</span><span class="ac-val">${a.sexo}</span>

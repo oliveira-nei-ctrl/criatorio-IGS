@@ -12,6 +12,7 @@ function showExportModal(){
   <button class="btn btn-green" onclick="exportSheet('verminose')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M12 22s-4-5-4-9a4 4 0 0 1 8 0c0 4-4 9-4 9z"/><circle cx="12" cy="9" r="1.5"/></svg> Verminose</button>
   <button class="btn btn-green" onclick="exportSheet('mortes')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg> Mortes</button>
   <button class="btn btn-green" onclick="exportSheet('financeiro')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Financeiro</button>
+  <button class="btn btn-green" onclick="exportSheet('lotes')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Lotes</button>
 </div>
 <div style="margin-top:12px;">
   <button class="btn btn-blue" onclick="exportAll()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="21 16 21 21 3 21 3 16"/><polyline points="16 10 12 14 8 10"/><line x1="12" y1="14" x2="12" y2="3"/></svg> Exportar tudo (todas as abas)</button>
@@ -31,6 +32,7 @@ const HEADERS = {
   verminose:  ['Data','Animal','FAMACHA','Vermífugo','Dose','Peso(kg)','Próx. Avaliação'],
   mortes:     ['Data','Animal','Pai','Mãe','Causa','Obs'],
   financeiro: ['Data','Tipo','Descrição','Valor(R$)','Animal','Qtd/Peso','Parte','Obs','Entrada/Saída'],
+  lotes: ['Nome','Descrição','Criação','Previsão Saída','Status','Qtd Animais','Animais'],
 };
 
 function toRows(key){
@@ -45,6 +47,7 @@ function toRows(key){
     else if(key==='verminose') rows.push([r.data,r.animal,r.famacha,r.med,r.dose,r.peso,r.prox]);
     else if(key==='mortes')  rows.push([r.data,r.id,r.pai,r.mae,r.causa,r.obs]);
     else if(key==='financeiro') rows.push([r.data,r.tipo,r.desc,r.valor,r.animal,r.qtd,r.parte,r.obs,r.entrada?'Entrada':'Saída']);
+    else if(key==='lotes') rows.push([r.nome,r.descricao,r.dataCriacao,r.dataPrevisao,r.status,r.animais?r.animais.length:0,(r.animais||[]).join(', ')]);
   });
   return rows;
 }

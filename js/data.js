@@ -1,6 +1,7 @@
 const D = {
   animais:[], nascimentos:[], mortes:[], vacinas:[],
   verminose:[], coberturas:[], prenheces:[], partos:[], financeiro:[],
+  lotes:[],
   config:{ gestacao:147 }
 };
 let curSec='painel', curReproTab='cobertura', curSaudeTab='vacina';
@@ -12,6 +13,7 @@ function load(){
     const raw = localStorage.getItem('criadouro_v4')||localStorage.getItem('criadouro_v3');
     if(raw){ const p=JSON.parse(raw); Object.keys(p).forEach(k=>{ if(D[k]!==undefined) D[k]=p[k]; }); }
     if(!D.config) D.config={ gestacao:147 };
+    if(!D.lotes) D.lotes=[];
   }catch(e){}
 }
 

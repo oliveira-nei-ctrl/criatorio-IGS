@@ -1,5 +1,5 @@
 const CACHE = 'criadouro-v4';
-const URLS = ['ovinos.html', 'manifest.json', 'css/style.css', 'js/data.js', 'js/app.js', 'js/dashboard.js', 'js/animais.js', 'js/reproducao.js', 'js/saude.js', 'js/financeiro.js', 'js/export.js'];
+const URLS = ['ovinos.html', 'manifest.json', 'css/style.css', 'js/data.js', 'js/app.js', 'js/dashboard.js', 'js/animais.js', 'js/reproducao.js', 'js/saude.js', 'js/financeiro.js', 'js/lotes.js', 'js/export.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
