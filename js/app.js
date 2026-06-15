@@ -38,6 +38,13 @@ function showConfigModal(){
 <div class="modal-hd"><div class="modal-title">Configurações</div><button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 <div class="form-g"><label>Período de gestação padrão (dias)</label><input type="number" id="cfg-gest" value="${D.config.gestacao||147}" min="140" max="160"></div>
 <div class="form-g"><label>Período médio entre vacinas (dias)</label><input type="number" id="cfg-vac" value="${D.config.intervaloVacina||180}" min="30" max="730"></div>
+<div class="form-g">
+  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+    <input type="checkbox" id="cfg-notif" ${D.config.notificacoes?'checked':''} onchange="solicitarNotificacao(this)">
+    Notificações de alertas
+  </label>
+  <div style="font-size:11px;color:var(--text3);margin-top:2px;">Receba alertas de vacinas atrasadas, partos próximos e verminose</div>
+</div>
 <button class="btn btn-blue" onclick="saveConfig()">Salvar configurações</button>
 <div style="margin-top:16px;padding-top:16px;border-top:0.5px solid var(--border);">
   <div class="card-title">Backup dos dados</div>
@@ -108,7 +115,7 @@ function renderSection(id){
   else if(id==='fin') renderFin();
   else if(id==='lotes') renderLotes();
 }
-function renderAll(){ renderDashboard(); renderPlantel(); ['cobertura','prenhez','parto'].forEach(t=>renderRepro(t)); ['vacina','verminose','mortes'].forEach(t=>renderSaude(t)); renderFin(); renderLotes(); }
+function renderAll(){ renderDashboard(); renderPlantel(); ['cobertura','prenhez','parto'].forEach(t=>renderRepro(t)); ['vacina','verminose','mortes'].forEach(t=>renderSaude(t)); renderFin(); renderLotes(); atualizarBadge(); }
 
 function toggleDark(){
   const h=document.documentElement;
@@ -150,11 +157,60 @@ function atualizarApp(){
   }
 }
 
+function solicitarNotificacao(cb){
+  if(!cb||!cb.checked){
+    D.config.notificacoes=false; save(); return;
+  }
+  if(!('Notification' in window)){
+    alert('Notificações não são suportadas neste navegador.'); cb.checked=false; return;
+  }
+  if(Notification.permission==='granted'){
+    D.config.notificacoes=true; save(); return;
+  }
+  if(Notification.permission==='denied'){
+    alert('Notificações foram bloqueadas. Permita nas configurações do navegador.'); cb.checked=false; return;
+  }
+  Notification.requestPermission().then(perm=>{
+    if(perm==='granted'){ D.config.notificacoes=true; save(); }
+    else { cb.checked=false; alert('Permissão negada. Ative nas configurações do navegador.'); }
+  });
+}
+function checkAndNotify(){
+  if(!D.config.notificacoes||!('Notification' in window)||Notification.permission!=='granted') return;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const alerts=[];
+  D.vacinas.forEach(v=>{ if(!v.prox)return; const d=daysUntil(v.prox); if(d<0) alerts.push(`Vacina ${v.nome||''} atrasada — ${v.animal||'-'}`); else if(d<=7) alerts.push(`Vacina ${v.nome||''} vence em ${d}d — ${v.animal||'-'}`); });
+  D.prenheces.forEach(p=>{ if(!p.prevParto)return; const d=daysUntil(p.prevParto); if(d>=0&&d<=14) alerts.push(`Parto previsto em ${d}d — ${p.femea||'-'}`); });
+  D.coberturas.forEach(c=>{ if(!c.prevParto)return; const d=daysUntil(c.prevParto); if(d>=0&&d<=14) alerts.push(`Parto prev. em ${d}d — ${c.femea||'-'}`); });
+  D.verminose.forEach(v=>{ if(!v.prox)return; const d=daysUntil(v.prox); if(d<=0) alerts.push(`Avaliar verminose: ${v.animal||'-'}`); });
+  if(alerts.length){
+    const notif=new Notification('Criatório IGS — Alertas',{
+      body: alerts.slice(0,3).join('. ')+(alerts.length>3?`. +${alerts.length-3} mais`:''),
+      icon:'icon-192.png'
+    });
+    setTimeout(()=>notif.close(),8000);
+  }
+}
+function atualizarBadge(){
+  const badge=document.getElementById('notif-badge');
+  if(!badge) return;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  let cnt=0;
+  D.vacinas.forEach(v=>{ if(v.prox&&daysUntil(v.prox)<0) cnt++; });
+  D.coberturas.forEach(c=>{ if(c.prevParto){ const d=daysUntil(c.prevParto); if(d>=0&&d<=14) cnt++; } });
+  D.prenheces.forEach(p=>{ if(p.prevParto){ const d=daysUntil(p.prevParto); if(d>=0&&d<=14) cnt++; } });
+  D.verminose.forEach(v=>{ if(v.prox&&daysUntil(v.prox)<=0) cnt++; });
+  badge.textContent=cnt||'';
+  badge.style.display=cnt?'':'none';
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
   load();
   if(D.config.dark) applyDark(true);
   renderAll();
+  atualizarBadge();
+  checkAndNotify();
 
   const ib=document.getElementById('install-banner');
   if(ib) ib.addEventListener('click', async ()=>{

@@ -13,6 +13,7 @@ function load(){
     const raw = localStorage.getItem('criadouro_v4')||localStorage.getItem('criadouro_v3');
     if(raw){ const p=JSON.parse(raw); Object.keys(p).forEach(k=>{ if(D[k]!==undefined) D[k]=p[k]; }); }
     if(!D.config) D.config={ gestacao:147 };
+    if(D.config.notificacoes===undefined) D.config.notificacoes=false;
     if(!D.lotes) D.lotes=[];
   }catch(e){}
 }
